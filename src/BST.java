@@ -1,118 +1,146 @@
-public class BST<K extends Comparable<K>, V> {
-    private BSTNode<K, V> root;
-    private int nodecount;
-
-    // Constructor
+public class BST<K extends Comparable<K>> {
+    private Node<K> root;
+ // Counter to keep track of the number of nodes
+    private int nodeCount; 
+    
     public BST() {
-        root = null;
-        nodecount = 0;
+        this.root = null;
+        this.nodeCount = 0;
     }
 
-    // Clear the tree
-    public void clear() {
-        root = null;
-        nodecount = 0;
+
+    private static class Node<K extends Comparable<K>> {
+     // KVPair object to hold key-value pair
+        KVPair<K> kvPair;
+        Node<K> left;
+        Node<K> right;
+
+        Node(K key, Object value) {
+            this.kvPair = new KVPair<>(key, value);
+        }
+    }
+    //insert operation
+
+    public void insert(K key, Object value) {
+        root = insert(root, new KVPair<>(key, value));
+        nodeCount++;
     }
 
-    // Insert a new value into the BST
-    public void insert(K key, V value) {
-        root = inserthelp(root, key, value);
-        nodecount++;
-    }
 
-    private BSTNode<K, V> inserthelp(BSTNode<K, V> node, K key, V value) {
+    private Node<K> insert(Node<K> node, KVPair<K> kvPair) {
         if (node == null) {
-            return new BSTNode<>(key, value);
+            return new Node<>(kvPair.getKey(), kvPair.getValue());
         }
 
-        int cmp = key.compareTo(node.key);
-        
+        int cmp = kvPair.getKey().compareTo(node.kvPair.getKey());
+        if (cmp <= 0) {
+            node.left = insert(node.left, kvPair);
+        } else {
+            node.right = insert(node.right, kvPair);
+        }
+
+        return node;
+    }
+
+    // Search operation
+    public Object search(K key) {
+        return search(root, key);
+    }
+
+    private Object search(Node<K> node, K key) {
+        if (node == null) return null;
+
+        int cmp = key.compareTo(node.kvPair.getKey());
         if (cmp < 0) {
-            node.left = inserthelp(node.left, key, value);
+            return search(node.left, key);
         } else if (cmp > 0) {
-            node.right = inserthelp(node.right, key, value);
+            return search(node.right, key);
+        } else {
+            return node.kvPair.getValue();
+        }
+    }
+
+    //remove operation
+    public void remove(K key, int id) {
+        root = remove(root, key, id);
+        if (root != null) {
+            nodeCount--; // Only decrement if a node was actually removed
+        }
+    }
+
+
+    private Node<K> remove(Node<K> node, K key, int id) {
+        if (node == null) return null;
+
+        int cmp = key.compareTo(node.kvPair.getKey());
+        if (cmp < 0) {
+            node.left = remove(node.left, key, id);
+        } else if (cmp > 0) {
+            node.right = remove(node.right, key, id);
+        } else {
+         // cmp == 0, key is equal
+            if (node.kvPair.getId() == id) {
+                if (node.left == null) return node.right;
+                if (node.right == null) return node.left;
+
+                Node<K> temp = node;
+                node = max(node.left);
+                node.left = deleteMax(temp.left);
+                node.right = temp.right;
+            } else {
+                // If the ID doesn't match, continue searching in the left subtree
+                // You may choose to search in the right subtree based on your requirements
+                node.left = remove(node.left, key, id);
+            }
         }
         return node;
     }
 
-    // Find a value in the BST
-    public V find(K key) {
-        return findhelp(root, key);
-    }
-
-    private V findhelp(BSTNode<K, V> node, K key) {
-        if (node == null) return null;
-
-        int cmp = key.compareTo(node.key);
-
-        if (cmp < 0) {
-            return findhelp(node.left, key);
-        } else if (cmp > 0) {
-            return findhelp(node.right, key);
-        } else {
-            return node.value;
-        }
-    }
-
-    // Remove a value from the BST
-    public V remove(K key) {
-        V temp = findhelp(root, key);
-        if (temp != null) {
-            root = removehelp(root, key);
-            nodecount--;
-        }
-        return temp;
-    }
-
-    private BSTNode<K, V> removehelp(BSTNode<K, V> node, K key) {
-        if (node == null) return null;
-        
-        int cmp = key.compareTo(node.key);
-
-        if (cmp < 0) {
-            node.left = removehelp(node.left, key);
-        } else if (cmp > 0) {
-            node.right = removehelp(node.right, key);
-        } else {
-            if (node.left == null) {
-                return node.right;
-            }
-            if (node.right == null) {
-                return node.left;
-            }
-            BSTNode<K, V> temp = node;
-            node = getMax(temp.left);
-            node.left = deleteMax(temp.left);
-            node.right = temp.right;
-        }
-        return node;
-    }
-
-    private BSTNode<K, V> getMax(BSTNode<K, V> node) {
+    private Node<K> max(Node<K> node) {
         if (node.right == null) return node;
-        return getMax(node.right);
+        return max(node.right);
     }
 
-    private BSTNode<K, V> deleteMax(BSTNode<K, V> node) {
+    private Node<K> deleteMax(Node<K> node) {
         if (node.right == null) return node.left;
         node.right = deleteMax(node.right);
         return node;
     }
-
-    // Get the size of the BST
-    public int size() {
-        return nodecount;
+    public int getNodeCount() {
+        return nodeCount;
+    }
+    public void printTree() {
+        printTree(root);
     }
 
-    // Add the BSTNode class (consider making this static or moving it to a separate file)
-    public static class BSTNode<K, V> {
-        K key;
-        V value;
-        BSTNode<K, V> left, right;
+    private void printTree(Node<K> node) {
+        if (node == null) return;
 
-        public BSTNode(K key, V value) {
-            this.key = key;
-            this.value = value;
+        printTree(node.left);
+        System.out.println(node.kvPair);
+        printTree(node.right);
+    }
+
+    public void printNodesInRange(K low, K high) {
+        printNodesInRange(root, low, high);
+    }
+
+    private void printNodesInRange(Node<K> node, K low, K high) {
+        if (node == null) return;
+
+        int cmpLow = low.compareTo(node.kvPair.getKey());
+        int cmpHigh = high.compareTo(node.kvPair.getKey());
+
+        if (cmpLow < 0) {
+            printNodesInRange(node.left, low, high);
+        }
+
+        if (cmpLow <= 0 && cmpHigh >= 0) {
+            System.out.println(node.kvPair);
+        }
+
+        if (cmpHigh > 0) {
+            printNodesInRange(node.right, low, high);
         }
     }
 }
