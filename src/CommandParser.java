@@ -17,12 +17,14 @@ public class CommandParser {
     private String[] args;
     private String worldSize; 
     private String commandFile; 
+    private BST<Integer, Seminar> idTree; 
 
 
     public CommandParser(String[] args) {
         this.args = args;
         this.worldSize = args[0]; 
         this.commandFile = args[1]; 
+        idTree = new BST<>();  // Initialize the tree
 
     }
 
@@ -33,6 +35,7 @@ public class CommandParser {
                 String cmd = sc.next();
                 switch (cmd) {
                     case "insert":
+                        System.out.println("Inside insert");
                         int insertId = sc.nextInt();
                         sc.nextLine();
                         String inputTitle = sc.nextLine().trim();
