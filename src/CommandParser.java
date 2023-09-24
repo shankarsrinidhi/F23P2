@@ -14,17 +14,19 @@ import java.io.File;
 
 public class CommandParser {
 
-    private String[] args;
-    private String worldSize; 
+    private String[] args; 
     private String commandFile; 
-    private BST<Integer, Seminar> idTree; 
-
+    private BST<Integer> id; 
+    private BST<Integer> cost;
+    private BST<String> keyword;
+    private BST<String> date;
+    private int worldSize;
 
     public CommandParser(String[] args) {
         this.args = args;
         this.worldSize = args[0]; 
         this.commandFile = args[1]; 
-        idTree = new BST<>();  // Initialize the tree
+      
 
     }
 
